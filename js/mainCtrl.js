@@ -1,20 +1,65 @@
 angular.module('chatroom').controller('mainCtrl', function($scope, messageService){
-  //In your controller you'll have a getMessages function and a postMessage function, but should be placed on $scope.
+  //Handles toggling b/w Message and Cookie input
+  $scope.show = true;
 
-  //The getMessages function will call the getData method on the messageService object. You'll then save the result of that request to
-  //your controllers $scope as messages ($scope.messages)
+//Functions for GET messages or cookie
+  $scope.getMessages = function () {
+    messageService.getMessages().then( function ( messages ) {
+      console.log( messages[0] );
+      $scope.messages = messages;
+    })
+  };
 
+  $scope.getCookie = function () {
+    messageService.getCookie().then( function ( cookie ) {
+      console.log( cookie );
+      $scope.cookie = cookie;
+    })
+  };
 
+  //functions for POST messages or cookie
+  $scope.postMessage = function ( newMessage ) {
+    // var obj2POST = {
+    //   message: newMessage
+    // }
 
-  //The postMessage function will take whatever the user typed in (hint: look at the html and see what ng-model correlates to on the input box),
-  //pass that text to the postMessage method on the messageService object which will then post it to the backend.
+    messageService.postMessage( newMessage ).then( function ( ) {
+      $scope.getMessages();
+    } );
+    $scope.message = "";
+  };
 
+  $scope.postCookie = function ( newCookie ) {
+    var cookieObj = {
+      "Great Butter Cookie": false
+      , "Flavorful Butter Cookie": false
+    };
+    if ( newCookie.toLowerCase() === "great butter cookie" ) {
+      cookieObj["Great Butter Cookie"] = true;
+    }
+    else if ( newCookie.toLowerCase() === "flavorful butter cookie" ) {
+      cookieObj["Flavorful Butter Cookie"] = true;
+    }
+    else {
+      $scope.cookiez = "";
+      return console.log("Your cookie is inferior, please send a valid cookie type");
+    }
+    messageService.postCookie( cookieObj ).then( function () {
+      $scope.getCookie();
+    } );
+    $scope.cookiez = "";
+  };
 
+  //GET messages and cookies on angular module load
+  $scope.getMessages();
+  $scope.getCookie();
 
+  //This goes and gets new data every 1500ms, which mimicks a chat room experience.
+  setInterval(function(){
+    $scope.getMessages();
+  }, 1500)
+  setInterval(function(){
+    $scope.getCookie();
+  }, 1500)
 
-  //uncomment this code when your getMessages function is finished
-  //This goes and gets new data every second, which mimicking a chat room experience.
-  // setInterval(function(){
-  //   $scope.getMessages();
-  // }, 1500)
-})
+});
